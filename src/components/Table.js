@@ -10,6 +10,9 @@ function Table() {
   });
   const [planetsHandleFilter, setPlanetsHandleFilter] = useState(planets);
 
+  const [spaceOptions, setSpaceOptions] = useState(['population',
+    'orbital_period', 'diameter', 'rotation_period', 'surface_water']);
+
   const [filterClickValue, setFilterClickValue] = useState(0);
 
   const objFilterNumberic = {
@@ -44,6 +47,9 @@ function Table() {
   const handleClickFilter = (event) => {
     event.preventDefault();
     const { column, comparison, value } = objFilterNumberic.filterByNumericValues[0];
+    console.log(column, comparison, value);
+    const optionsColumnDecrease = spaceOptions.filter((e) => e !== column, 0);
+    setSpaceOptions(optionsColumnDecrease);
     if (column !== undefined
       && comparison !== undefined && value !== undefined && filterClickValue < 1) {
       const filterPlanets = planets
@@ -92,11 +98,9 @@ function Table() {
           data-testid="column-filter"
           name="column"
         >
-          <option value="population" selected>population</option>
-          <option value="orbital_period">orbital_period</option>
-          <option value="diameter">diameter</option>
-          <option value="rotation_period">rotation_period</option>
-          <option value="surface_water">surface_water</option>
+          {spaceOptions.map((element) => (
+            <option key={ element } value={ element }>{element}</option>
+          ))}
         </select>
         <select
           name="comparison"
