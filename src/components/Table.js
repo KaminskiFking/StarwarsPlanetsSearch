@@ -1,40 +1,28 @@
 import React, { useContext, useState, useEffect } from 'react';
 import { StarWarsContext } from '../context/StarWarsProvider';
 
+const spaceOptions = ['population',
+  'orbital_period',
+  'diameter',
+  'rotation_period',
+  'surface_water',
+];
+
+const comparationOptions = ['maior que',
+  'menor que',
+  'igual a',
+];
+
 function Table() {
-  const { planets } = useContext(StarWarsContext);
-  const [planetsHandleFilter, setPlanetsHandleFilter] = useState(planets);
+  const { planets,
+    filterName,
+    setFilterName, setFilterByNumeric, filterByNumeric } = useContext(StarWarsContext);
 
-  const [spaceOptions, setSpaceOptions] = useState(['population',
-    'diameter', 'orbital_period', 'rotation_period', 'surface_water']);
+  const [columnUm, setColumn] = useState(spaceOptions[0]);
+  const [valueUm, setValueUm] = useState('0');
+  const [comparisonUm, setComparison] = useState(comparationOptions[0]);
 
-  const [filterByNumeric, setFilterByNumeric] = useState({
-    column: spaceOptions[0],
-    comparison: 'maior que',
-    value: '0',
-  });
-
-  const [filterClickValue, setFilterClickValue] = useState(0);
-
-  const objFilterNumberic = {
-    filterByNumericValues: [filterByNumeric],
-  };
-
-  const [FilterName, setFilterName] = useState({
-    filterByName: {
-      name: '',
-    },
-  });
-
-  useEffect(() => { setPlanetsHandleFilter(planets); }, [planets]);
-
-  useEffect(() => {
-    setFilterByNumeric({
-      column: spaceOptions[0],
-      comparison: 'maior que',
-      value: '0',
-    });
-  }, [spaceOptions]);
+  const [excludColumns, setExcludColumns] = useState([]);
 
   const filterByNumber = (valueA, valueB, comparison) => {
     valueA = parseInt(valueA, 10);
@@ -46,50 +34,41 @@ function Table() {
   };
 
   const handleChange = ({ target }) => {
-    const { value } = target;
     setFilterName({
       filterByName: {
-        name: value,
+        name: target.value,
       } });
   };
 
-  const handleClickFilter = () => {
-    const { column, comparison, value } = objFilterNumberic.filterByNumericValues[0];
-    console.log(column, comparison, value);
-    const indexOptions = spaceOptions.findIndex((e) => e === column);
-    const testDecrease = spaceOptions
-      .filter((element, index) => element[indexOptions] !== element[index]);
-    console.log(testDecrease);
-    setSpaceOptions(testDecrease);
-    if (column !== undefined
-      && comparison !== undefined && value !== undefined && filterClickValue < 1) {
-      const filterPlanets = planets
-        .filter((planetNum) => filterByNumber(planetNum[column], value, comparison));
-      console.log(filterPlanets);
-      setFilterClickValue({ filterClickValue: filterClickValue + 1 });
-      return setPlanetsHandleFilter(filterPlanets);
-    }
-    if (Object.values(filterClickValue)[0] === 1) {
-      return setPlanetsHandleFilter((prevFilterSum) => prevFilterSum
-        .filter((planetNumber) => filterByNumber(
-          planetNumber[column], value, comparison,
-        )));
-    }
+  const handClickDecreaseFilter = (value) => {
+    setFilterByNumeric((prevState) => prevState.filter((element) => element !== value));
   };
 
-  const handleChangeNumbers = ({ target }) => {
-    const { value, name } = target;
-    setFilterByNumeric((prevFilter) => ({
-      ...prevFilter,
-      [name]: value,
-    }));
+  const handClickRemoveFilter = () => {
+    setFilterByNumeric([]);
   };
 
-  const { filterByName } = FilterName;
-  const valueNumber = objFilterNumberic.filterByNumericValues.filter((e) => e.value);
-  console.log(planetsHandleFilter);
+  const handleClickFilter = async () => {
+    setFilterByNumeric((prevState) => [
+      ...prevState, { column: columnUm, value: valueUm, comparison: comparisonUm }]);
+    setExcludColumns((prevState) => [...prevState, columnUm]);
+  };
+
+  useEffect(() => {
+    setColumn(spaceOptions
+      .filter((element) => !excludColumns.includes(element))[0]);
+  }, [excludColumns]);
+
+  const { filterByName } = filterName;
   return (
     <div>
+      <button
+        data-testid="button-remove-filters"
+        type="button"
+        onClick={ handClickRemoveFilter }
+      >
+        Remove Filters
+      </button>
       <form>
         <label htmlFor="filter-name">
           Filtrar:
@@ -105,22 +84,29 @@ function Table() {
       </form>
       <form>
         <select
-          onChange={ handleChangeNumbers }
+          onChange={ ({ target }) => setColumn(target.value) }
           data-testid="column-filter"
           name="column"
         >
-          {spaceOptions.map((element) => (
-            <option key={ element } value={ element }>{element}</option>
-          ))}
+          {spaceOptions.filter((element) => !excludColumns.includes(element))
+            .map((elementSpace) => (
+              <option key={ elementSpace } value={ elementSpace }>{elementSpace}</option>
+            ))}
         </select>
         <select
           name="comparison"
-          onChange={ handleChangeNumbers }
+          onChange={ ({ target }) => setComparison(target.value) }
           data-testid="comparison-filter"
         >
-          <option value="maior que" selected>maior que</option>
-          <option value="menor que">menor que</option>
-          <option value="igual a">igual a</option>
+          {comparationOptions
+            .map((elementComparation) => (
+              <option
+                key={ elementComparation }
+                value={ elementComparation }
+              >
+                {elementComparation}
+              </option>
+            ))}
         </select>
         <label htmlFor="filter-number">
           Number:
@@ -128,8 +114,7 @@ function Table() {
             data-testid="value-filter"
             defaultValue="0"
             type="number"
-            value={ valueNumber[0] && valueNumber[0].value }
-            onChange={ handleChangeNumbers }
+            onChange={ ({ target }) => setValueUm(target.value) }
             name="value"
           />
         </label>
@@ -141,6 +126,17 @@ function Table() {
           Filtrar
         </button>
       </form>
+      {filterByNumeric.map((elementF, index) => (
+        <li
+          data-testid="filter"
+          key={ index }
+        >
+          { elementF.column }
+          <button type="button" onClick={ () => handClickDecreaseFilter(elementF) }>
+            X
+          </button>
+        </li>
+      ))}
       <table>
         <tr>
           <th>name</th>
@@ -158,8 +154,12 @@ function Table() {
           <th>url</th>
         </tr>
         <tbody>
-          {planetsHandleFilter && planetsHandleFilter
-            .filter((planetFilter) => (planetFilter.name).includes(filterByName.name))
+          {filterByNumeric
+            .reduce((acc, { column, value, comparison }) => acc
+              .filter((planet) => (
+                filterByNumber(planet[column], value, comparison))),
+            planets)
+            .filter((ele) => (ele.name).includes(filterByName.name))
             .map((element, index) => (
               <tr key={ index }>
                 <td>{element.name}</td>

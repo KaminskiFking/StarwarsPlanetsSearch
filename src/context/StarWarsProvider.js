@@ -6,6 +6,13 @@ const StarWarsContext = createContext();
 
 const StarWarsProvider = ({ children }) => {
   const [tablePlanets, setTablePlanets] = useState([]);
+  const [filterByNumeric, setFilterByNumeric] = useState([]);
+
+  const [filterName, setFilterName] = useState({
+    filterByName: {
+      name: '',
+    },
+  });
 
   useEffect(() => {
     fetchPlanets().then((requestPlanets) => {
@@ -16,6 +23,10 @@ const StarWarsProvider = ({ children }) => {
 
   const resultsStarWars = {
     planets: tablePlanets,
+    filterByNumeric,
+    setFilterByNumeric,
+    filterName,
+    setFilterName,
   };
 
   return (
