@@ -7,8 +7,8 @@ const StarWarsContext = createContext();
 const StarWarsProvider = ({ children }) => {
   const [tablePlanets, setTablePlanets] = useState([]);
 
-  useEffect(async () => {
-    await fetchPlanets().then((requestPlanets) => {
+  useEffect(() => {
+    fetchPlanets().then((requestPlanets) => {
       requestPlanets.forEach((informations) => delete informations.residents);
       setTablePlanets([...requestPlanets]);
     });

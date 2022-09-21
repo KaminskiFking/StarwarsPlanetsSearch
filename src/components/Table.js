@@ -3,15 +3,16 @@ import { StarWarsContext } from '../context/StarWarsProvider';
 
 function Table() {
   const { planets } = useContext(StarWarsContext);
-  const [filterByNumeric, setFilterByNumeric] = useState({
-    column: 'population',
-    comparison: 'maior que',
-    value: '0',
-  });
   const [planetsHandleFilter, setPlanetsHandleFilter] = useState(planets);
 
   const [spaceOptions, setSpaceOptions] = useState(['population',
-    'orbital_period', 'diameter', 'rotation_period', 'surface_water']);
+    'diameter', 'orbital_period', 'rotation_period', 'surface_water']);
+
+  const [filterByNumeric, setFilterByNumeric] = useState({
+    column: spaceOptions[0],
+    comparison: 'maior que',
+    value: '0',
+  });
 
   const [filterClickValue, setFilterClickValue] = useState(0);
 
@@ -26,6 +27,14 @@ function Table() {
   });
 
   useEffect(() => { setPlanetsHandleFilter(planets); }, [planets]);
+
+  useEffect(() => {
+    setFilterByNumeric({
+      column: spaceOptions[0],
+      comparison: 'maior que',
+      value: '0',
+    });
+  }, [spaceOptions]);
 
   const filterByNumber = (valueA, valueB, comparison) => {
     valueA = parseInt(valueA, 10);
@@ -44,12 +53,14 @@ function Table() {
       } });
   };
 
-  const handleClickFilter = (event) => {
-    event.preventDefault();
+  const handleClickFilter = () => {
     const { column, comparison, value } = objFilterNumberic.filterByNumericValues[0];
     console.log(column, comparison, value);
-    const optionsColumnDecrease = spaceOptions.filter((e) => e !== column, 0);
-    setSpaceOptions(optionsColumnDecrease);
+    const indexOptions = spaceOptions.findIndex((e) => e === column);
+    const testDecrease = spaceOptions
+      .filter((element, index) => element[indexOptions] !== element[index]);
+    console.log(testDecrease);
+    setSpaceOptions(testDecrease);
     if (column !== undefined
       && comparison !== undefined && value !== undefined && filterClickValue < 1) {
       const filterPlanets = planets
@@ -123,7 +134,7 @@ function Table() {
           />
         </label>
         <button
-          type="submit"
+          type="button"
           data-testid="button-filter"
           onClick={ handleClickFilter }
         >
