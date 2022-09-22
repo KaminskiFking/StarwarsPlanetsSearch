@@ -12,7 +12,7 @@ describe('Verifica Componentes Filter', () => {
   })
   });
 
-  it('Verifica name-filter', () => {
+  it('Verifica name-filterr', () => {
     render(<App />);
 
     const nameFilter = screen.getByTestId('name-filter')
